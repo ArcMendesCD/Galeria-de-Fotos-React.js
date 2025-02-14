@@ -89,7 +89,61 @@ app.get('/api/albums/select', (req, res) => {
     });
 });
 
+// Album photos :/
+app.get('/api/albums/select_fotos/:id', (req, res) => {
+    const { id } = req.params;
+    if (!id) {
+        return res.status(400).json({ message: 'ID do álbum é obrigatório' });
+    }
+    db.query('SELECT f.id, f.titulo, f.descricao, f.data_upload, f.cor_predominante, f.foto_data FROM galeria.fotos f JOIN galeria.album_fotos af ON f.id = af.foto_id WHERE af.album_id = ?;',
+         [id], (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar fotos:', err);
+            return res.status(500).json({ message: 'Erro interno' });
+        }
+        res.status(200).json(results);
+    });
+});
+
+//Criar Album :)
+app.post('/api/albums/create', (req, res) => {
+    const { titulo, descricao } = req.body;
+  
+    const query = 'INSERT INTO albums (titulo, descricao) VALUES (?, ?)';
+    db.query(query, [titulo, descricao], (err, result) => {
+      if (err) {
+        console.error('Erro na execução da query', err);
+        return res.status(500).json({ message: 'erro interno' });
+      }
+      res.status(201).json({ message: 'Album registrado com sucesso' });
+    });
+  });
+
+  //Criar Album :)
+app.post('/api/fotos/create', (req, res) => {
+    const { titulo, descricao, data_upload, cor_predominante, foto_data } = req.body;
+  
+    const query1 = 'INSERT INTO fotos (titulo, descricao, data_upload, cor_predominante, foto_data) VALUES (?, ?, ?, ?, ?)';
+    const query2 = 'INSERT INTO album_fotos (album_id, foto_id) VALUES (?, ?)';
+    db.query1(query1, [titulo, descricao, data_upload, cor_predominante, foto_data], (err1, result) => {
+      if (err1) {
+        console.error('Erro na execução da query da tabela de fotos', err1);
+        return res.status(500).json({ message: 'erro interno' });
+      }
+      res.status(201).json({ message: 'Album registrado com sucesso' });
+    });
+
+    db.query2(query2, [album_id, foto_id], (err2, result) => {
+        if (err2) {
+          console.error('Erro na execução da query da tabela de fotos', err2);
+          return res.status(500).json({ message: 'erro interno' });
+        }
+        res.status(201).json({ message: 'Album registrado com sucesso' });
+      });
+  });
+
+
 
 app.listen(port, () => {
-    console.log(`Servodor rodando no endereço http://localhost:${port}`);
+    console.log(`Servidor rodando no endereço http://localhost:${port}`);
 });
